@@ -6,7 +6,7 @@
  * @array: array for sorting
  * @size: size of the arrray
  */
-void selection_sort(int *array, size_t size)
+void quick_sort(int *array, size_t size)
 {
 	size_t i, j, ind;
 	int num, num2;
