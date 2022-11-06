@@ -1,73 +1,107 @@
 #include "sort.h"
+typedef unsigned char bool;
+#define true (1)
+#define false (!true)
+#define SWAP_DOUBLE_LIST(NODE, HEAD, TYPE)                         \
+	do                                                             \
+	{                                                              \
+		TYPE node_connections[4];                                  \
+		node_connections[0] = (NODE)->prev->next;                  \
+		node_connections[1] = (NODE)->prev->prev;                  \
+		node_connections[2] = (NODE)->next;                        \
+		node_connections[3] = (NODE)->prev;                        \
+		if (*(HEAD) == node_connections[3])                        \
+		{                                                          \
+			*(HEAD) = (NODE);                                      \
+		}                                                          \
+		if (node_connections[3]->prev)                             \
+		{                                                          \
+			node_connections[3]->prev->next = node_connections[0]; \
+		}                                                          \
+		if ((NODE)->next)                                          \
+		{                                                          \
+			(NODE)->next->prev = node_connections[3];              \
+		}                                                          \
+		node_connections[3]->next = node_connections[2];           \
+		node_connections[3]->prev = node_connections[0];           \
+		(NODE)->next = node_connections[3];                        \
+		(NODE)->prev = node_connections[1];                        \
+	} while (false)
+
+#define SWAP_DOUBLE_LIST_NEXT(NODE, HEAD, TYPE)             \
+	do                                                      \
+	{                                                       \
+		TYPE node_connections[4];                           \
+		if ((NODE)->prev)                                   \
+			node_connections[0] = (NODE)->prev->next;       \
+		node_connections[1] = (NODE)->next->next;           \
+		node_connections[2] = (NODE)->next;                 \
+		node_connections[3] = (NODE);                       \
+		if (*(HEAD) == NODE)                                \
+		{                                                   \
+			*(HEAD) = node_connections[2];                  \
+		}                                                   \
+		if (NODE->prev)                                     \
+		{                                                   \
+			(NODE)->prev->next = node_connections[2];       \
+		}                                                   \
+		if ((NODE)->next->next)                             \
+		{                                                   \
+			(NODE)->next->next->prev = node_connections[3]; \
+		}                                                   \
+		(NODE)->next->next = node_connections[3];           \
+		(NODE)->next->prev = (NODE)->prev;                  \
+		(NODE)->next = node_connections[1];                 \
+		(NODE)->prev = node_connections[2];                 \
+	} while (false)
 
 /**
- * quick_sort - function that sorts an array of integers
- *              in ascending order using the Quick sort algorithm
- * @array: array
- * @size: array's size
- * Return: void
+ * cocktail_sort_list - sort list using the cocktail algorithm.
+ *
+ * @list: head of a double linked list.
+ *
+ * Return: Always void.
  */
-void quick_sort(int *array, size_t size)
+void cocktail_sort_list(listint_t **list)
 {
-	if (array == NULL || size < 2)
+	listint_t *node, *next_node = NULL, *in_node = NULL;
+	int changes;
+
+	if (list == NULL || *list == NULL)
 		return;
-
-	quick_s(array, 0, size - 1, size);
-}
-
-/**
- * partition - partition
- * @array: array
- * @lo: lower
- * @hi: higher
- * @size: array's size
- * Return: i
- */
-int partition(int *array, int lo, int hi, size_t size)
-{
-	int i = lo - 1, j = lo;
-	int pivot = array[hi], aux = 0;
-
-	for (; j < hi; j++)
+	node = *list;
+	for (node = *list; node; node = next_node)
 	{
-		if (array[j] < pivot)
+		changes = 0;
+		next_node = node->next;
+		for (in_node = *list; in_node;)
 		{
-			i++;
-			if (array[i] != array[j])
+			if (in_node->next && in_node->next->n < in_node->n)
+			{	changes++;
+				SWAP_DOUBLE_LIST_NEXT(in_node, list, listint_t *);
+				print_list((const listint_t *)*list);
+				continue;
+			}
+			if (in_node->next)
+				in_node = in_node->next;
+			else
 			{
-				aux = array[i];
-				array[i] = array[j];
-				array[j] = aux;
-				print_array(array, size);
+				if (changes != 0)
+					break;
+				in_node = in_node->next;
 			}
 		}
-	}
-	if (array[i + 1] != array[hi])
-	{
-		aux = array[i + 1];
-		array[i + 1] = array[hi];
-		array[hi] = aux;
-		print_array(array, size);
-	}
-	return (i + 1);
-}
-
-/**
- * quick_s - quick sort
- * @array: given array
- * @lo: lower
- * @hi:higher
- * @size: array's size
- * Return: void
- */
-void quick_s(int *array, int lo, int hi, size_t size)
-{
-	int pivot;
-
-	if (lo < hi)
-	{
-		pivot = partition(array, lo, hi, size);
-		quick_s(array, lo, pivot - 1, size);
-		quick_s(array, pivot + 1, hi, size);
+		for (; in_node;)
+		{
+			if (in_node->prev && in_node->n < in_node->prev->n)
+			{
+				SWAP_DOUBLE_LIST(in_node, list, listint_t *);
+				print_list((const listint_t *)*list);
+				continue;
+			}
+			if (in_node->prev == NULL)
+				break;
+			in_node = in_node->prev;
+		}
 	}
 }
